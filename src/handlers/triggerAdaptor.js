@@ -246,7 +246,7 @@ const main = async (body) => {
             )}x increase)`
         )
         .join('\n');
-      await sendMessage(message, process.env.TVL_SPIKE_WEBHOOK);
+      // await sendMessage(message, process.env.TVL_SPIKE_WEBHOOK);
     }
   }
 
@@ -257,7 +257,7 @@ const main = async (body) => {
       .length
   ) {
     const message = `Project ${body.adaptor} yields have been added`;
-    await sendMessage(message, process.env.NEW_YIELDS_WEBHOOK);
+    // await sendMessage(message, process.env.NEW_YIELDS_WEBHOOK);
   }
 
   // ---------- DB INSERT
