@@ -54,7 +54,7 @@ const buildPoolsEnriched = async (queryString) => {
   }
 
   const params = {
-    Bucket: 'llama-apy-prod-data',
+    Bucket: 'piedao-apy-server-prod-data',
     Key: 'enriched/dataEnriched.json',
     ExpressionType: 'SQL',
     Expression: query,

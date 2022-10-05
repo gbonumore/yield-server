@@ -131,19 +131,19 @@ const main = async () => {
   // add ML predictions
   console.log('\nadding apy runway prediction');
   // load categorical feature mappings
-  const modelMappings = await utils.readFromS3(
-    'llama-apy-prediction-prod',
-    'mlmodelartefacts/categorical_feature_mapping_2022_05_20.json'
-  );
-  for (const el of dataEnriched) {
-    project_fact = modelMappings.project_factorized[el.project];
-    chain_fact = modelMappings.chain_factorized[el.chain];
-    // in case of new project assign -1 to factorised variable indicated missing value
-    // RF usually handles this quite well, of course if we get lots of new projects, will
-    // need to retrain the algorithm
-    el.project_factorized = project_fact === undefined ? -1 : project_fact;
-    el.chain_factorized = chain_fact === undefined ? -1 : chain_fact;
-  }
+  // const modelMappings = await utils.readFromS3(
+  //   'piedao-apy-server-prediction-prod',
+  //   'mlmodelartefacts/categorical_feature_mapping_2022_05_20.json'
+  // );
+  // for (const el of dataEnriched) {
+  //   project_fact = modelMappings.project_factorized[el.project];
+  //   chain_fact = modelMappings.chain_factorized[el.chain];
+  //   // in case of new project assign -1 to factorised variable indicated missing value
+  //   // RF usually handles this quite well, of course if we get lots of new projects, will
+  //   // need to retrain the algorithm
+  //   el.project_factorized = project_fact === undefined ? -1 : project_fact;
+  //   el.chain_factorized = chain_fact === undefined ? -1 : chain_fact;
+  // }
 
   // impute null values on apyStdExpanding (this will be null whenever we have pools with less than 2
   // samples, eg. whenever a new pool project is listed or an existing project adds new pools
@@ -152,62 +152,62 @@ const main = async () => {
     apyStdExpanding: p.apyStdExpanding ?? 0,
   }));
 
-  const y_pred = (
-    await superagent
-      .post(
-        'https://yet9i1xlhf.execute-api.eu-central-1.amazonaws.com/predictions'
-      )
-      // filter to required features only
-      .send(
-        dataEnriched.map((el) => ({
-          apy: el.apy,
-          tvlUsd: el.tvlUsd,
-          apyMeanExpanding: el.apyMeanExpanding,
-          apyStdExpanding: el.apyStdExpanding,
-          chain_factorized: el.chain_factorized,
-          project_factorized: el.project_factorized,
-        }))
-      )
-  ).body.predictions;
+  // const y_pred = (
+  //   await superagent
+  //     .post(
+  //       'https://yet9i1xlhf.execute-api.eu-central-1.amazonaws.com/predictions'
+  //     )
+  //     // filter to required features only
+  //     .send(
+  //       dataEnriched.map((el) => ({
+  //         apy: el.apy,
+  //         tvlUsd: el.tvlUsd,
+  //         apyMeanExpanding: el.apyMeanExpanding,
+  //         apyStdExpanding: el.apyStdExpanding,
+  //         chain_factorized: el.chain_factorized,
+  //         project_factorized: el.project_factorized,
+  //       }))
+  //     )
+  // ).body.predictions;
   // add predictions to dataEnriched
-  if (dataEnriched.length !== y_pred.length) {
-    throw new Error(
-      'prediction array length does not match dataEnriched input shape!'
-    );
-  }
+  // if (dataEnriched.length !== y_pred.length) {
+  //   throw new Error(
+  //     'prediction array length does not match dataEnriched input shape!'
+  //   );
+  // }
   // add predictions to dataEnriched
-  for (const [i, el] of dataEnriched.entries()) {
-    // for certain conditions we don't want to show predictions on the frontend
-    // 1. apy === 0
-    // 2. less than 7 datapoints per pool
-    // (low confidence in the model predictions backward looking features (mean and std)
-    // are undeveloped and might skew prediction results)
+  // for (const [i, el] of dataEnriched.entries()) {
+  //   // for certain conditions we don't want to show predictions on the frontend
+  //   // 1. apy === 0
+  //   // 2. less than 7 datapoints per pool
+  //   // (low confidence in the model predictions backward looking features (mean and std)
+  //   // are undeveloped and might skew prediction results)
 
-    // for frontend, encoding predicted labels
-    const classEncoding = {
-      0: 'Down',
-      1: 'Stable/Up',
-    };
+  //   // for frontend, encoding predicted labels
+  //   const classEncoding = {
+  //     0: 'Down',
+  //     1: 'Stable/Up',
+  //   };
 
-    const nullifyPredictionsCond = el.apy <= 0 || el.count < 7;
-    const cond = y_pred[i][0] >= y_pred[i][1];
-    // (we add label + probabalilty of the class with the larger probability)
-    const predictedClass = nullifyPredictionsCond
-      ? null
-      : cond
-      ? classEncoding[0]
-      : classEncoding[1];
-    const predictedProbability = nullifyPredictionsCond
-      ? null
-      : cond
-      ? y_pred[i][0] * 100
-      : y_pred[i][1] * 100;
+  //   const nullifyPredictionsCond = el.apy <= 0 || el.count < 7;
+  //   const cond = y_pred[i][0] >= y_pred[i][1];
+  //   // (we add label + probabalilty of the class with the larger probability)
+  //   const predictedClass = nullifyPredictionsCond
+  //     ? null
+  //     : cond
+  //     ? classEncoding[0]
+  //     : classEncoding[1];
+  //   const predictedProbability = nullifyPredictionsCond
+  //     ? null
+  //     : cond
+  //     ? y_pred[i][0] * 100
+  //     : y_pred[i][1] * 100;
 
-    el.predictions = {
-      predictedClass,
-      predictedProbability,
-    };
-  }
+  //   el.predictions = {
+  //     predictedClass,
+  //     predictedProbability,
+  //   };
+  // }
 
   // based on discussion here: https://github.com/DefiLlama/yield-ml/issues/2
   // the output of a random forest predict_proba are smoothed relative frequencies of
@@ -215,25 +215,25 @@ const main = async () => {
   // instead of showing this as is on the frontend,
   // it makes sense to a) either calibrate (which will take a bit more time and effort)
   // or to bin the scores into confidence values which i'm using here
-  const predScores = dataEnriched
-    .map((el) => el.predictions.predictedProbability)
-    .filter((el) => el !== null);
-  // bin into 3 equal groups using 33.3%, 66.6% and 100% quantile;
-  // currently gives ~ [ 69, 84, 100 ] as cutoff values
-  const quantilesScores = [0.333, 0.666, 1];
-  const [q33, q66, q1] = ss.quantile(predScores, quantilesScores);
-  for (const p of dataEnriched) {
-    p.predictions.binnedConfidence =
-      // we nullify binnedConfidence in case one of the above probability conditions in nullifyPredictionsCond
-      // were true
-      p.predictions.predictedProbability === null
-        ? null
-        : p.predictions.predictedProbability <= q33
-        ? 1
-        : p.predictions.predictedProbability <= q66
-        ? 2
-        : 3;
-  }
+  // const predScores = dataEnriched
+  //   .map((el) => el.predictions.predictedProbability)
+  //   .filter((el) => el !== null);
+  // // bin into 3 equal groups using 33.3%, 66.6% and 100% quantile;
+  // // currently gives ~ [ 69, 84, 100 ] as cutoff values
+  // const quantilesScores = [0.333, 0.666, 1];
+  // const [q33, q66, q1] = ss.quantile(predScores, quantilesScores);
+  // for (const p of dataEnriched) {
+  //   p.predictions.binnedConfidence =
+  //     // we nullify binnedConfidence in case one of the above probability conditions in nullifyPredictionsCond
+  //     // were true
+  //     p.predictions.predictedProbability === null
+  //       ? null
+  //       : p.predictions.predictedProbability <= q33
+  //       ? 1
+  //       : p.predictions.predictedProbability <= q66
+  //       ? 2
+  //       : 3;
+  // }
 
   // round numbers
   const precision = 5;
@@ -265,15 +265,19 @@ const main = async () => {
   const timestamp = new Date(Math.floor(Date.now() / f) * f).toISOString();
 
   if (timestamp.split('T')[1] === '23:00:00.000Z') {
-    const keyPredictions = `predictions-hourly/dataEnriched_${timestamp}.json`;
-    await utils.writeToS3(bucket, keyPredictions, dataEnriched);
+    // const keyPredictions = `predictions-hourly/dataEnriched_${timestamp}.json`;
+    // await utils.writeToS3(bucket, keyPredictions, dataEnriched);
   }
 
   // store /poolsEnriched (/pools) api response to s3 where we cache it
-  await utils.storeAPIResponse('defillama-datasets', 'yield-api/pools', {
-    status: 'success',
-    data: await buildPoolsEnriched(undefined),
-  });
+  await utils.storeAPIResponse(
+    'piedao-apy-server-prod-datasets',
+    'yield-api/pools',
+    {
+      status: 'success',
+      data: await buildPoolsEnriched(undefined),
+    }
+  );
 };
 
 ////// helper functions

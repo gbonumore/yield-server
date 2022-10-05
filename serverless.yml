@@ -1,4 +1,6 @@
-service: llama-apy
+org: knxpwr
+console: true
+service: piedao-apy-server
 
 package:
   individually: true
@@ -231,6 +233,12 @@ resources:
       Properties:
         BucketName: ${self:service}-${self:custom.stage}-data
 
+    # --- create bucket
+    BucketDataSet:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${self:custom.stage}-datasets
+
     # --- alarm stuff for DLQ
     DlqAlarm:
       Type: AWS::CloudWatch::Alarm
@@ -254,7 +262,7 @@ resources:
       Type: AWS::SNS::Topic
       Properties:
         Subscription:
-          - Endpoint: slasher125@protonmail.com
+          - Endpoint: knxpwr@proton.me
             Protocol: email
 
 custom:

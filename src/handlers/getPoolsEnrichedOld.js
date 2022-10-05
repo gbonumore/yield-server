@@ -54,7 +54,7 @@ const buildPoolsEnrichedOld = async (queryString) => {
   }
 
   const params = {
-    Bucket: 'llama-apy-prod-data',
+    Bucket: 'piedao-apy-server-prod-data',
     Key: 'enriched/dataEnriched.json',
     ExpressionType: 'SQL',
     Expression: query,
@@ -82,10 +82,14 @@ const buildPoolsEnrichedOld = async (queryString) => {
 const redirectResponse = async (response) => {
   const filename = 'yields-poolsOld.json';
   // store /poolsEnriched (/pools) api response to s3 where we cache it
-  await storeAPIResponse('defillama-datasets', `temp/${filename}`, {
-    status: 'success',
-    data: response,
-  });
+  await storeAPIResponse(
+    'piedao-apy-server-prod-datasets',
+    `temp/${filename}`,
+    {
+      status: 'success',
+      data: response,
+    }
+  );
   return buildRedirect(filename);
 };
 
@@ -94,9 +98,9 @@ const buildRedirect = (filename) => {
     statusCode: 307,
     body: '',
     headers: {
-      Location: `https://defillama-datasets.s3.eu-central-1.amazonaws.com/temp/${filename}`,
+      Location: `https://piedao-apy-server-prod-datasets.s3.eu-central-1.amazonaws.com/temp/${filename}`,
       Expires: next21Minutedate(),
-      "Access-Control-Allow-Origin": "*",
+      'Access-Control-Allow-Origin': '*',
     },
   };
 };

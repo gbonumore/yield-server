@@ -27,6 +27,8 @@ const connect = async () => {
       // overriding default of 30sec to 60sec to decrease nb of potential reconnects of 1 lambda
       // running multiple adapters
       idleTimeoutMillis: 60000,
+      max: 20,
+      ssl: { rejectUnauthorized: false },
     });
   }
   return conn;

@@ -30,7 +30,7 @@ const main = async () => {
   const csv = headerString + body;
 
   const params = {
-    Bucket: 'defillama-datasets',
+    Bucket: 'piedao-apy-server-prod',
     Key: 'yields/yield_rankings.csv',
     ACL: 'public-read',
     Body: csv,
