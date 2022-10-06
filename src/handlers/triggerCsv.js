@@ -10,13 +10,13 @@ module.exports.handler = async () => {
 const main = async () => {
   let poolsEnriched = await buildPoolsEnriched(undefined);
 
-  // parse nested prediction field into separate fields
-  poolsEnriched = poolsEnriched.map((p) => ({
-    ...p,
-    predictedClass: p['predictions']['predictedClass'],
-    predictedConfidence: p['predictions']['predictedProbability'],
-    binnedConfidence: p['predictions']['binnedConfidence'],
-  }));
+  // // parse nested prediction field into separate fields
+  // poolsEnriched = poolsEnriched.map((p) => ({
+  //   ...p,
+  //   predictedClass: p['predictions']['predictedClass'],
+  //   predictedConfidence: p['predictions']['predictedProbability'],
+  //   binnedConfidence: p['predictions']['binnedConfidence'],
+  // }));
 
   // remove predictions field
   poolsEnriched = poolsEnriched.map(({ predictions, ...item }) => item);
